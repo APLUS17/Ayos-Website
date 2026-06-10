@@ -14,7 +14,7 @@
   <header class="nav-header">
     <nav class="nav-inner">
       <a href="#" class="nav-logo">Ayo Omoloja</a>
-      <button id="mobile-menu-toggle" class="mobile-only" style="display: none; font-size: 16px; font-weight: 500; color: #1f1f1f; display: flex; align-items: center; gap: 8px;">Menu <span style="font-size: 20px; line-height: 1;">=</span></button>
+      <button id="mobile-menu-toggle" class="mobile-only" style="display: none; font-size: 12px; font-weight: 400; color: #1f1f1f; display: flex; align-items: center; gap: 6px;">Menu <span style="font-size: 16px; line-height: 1;">=</span></button>
       <div class="nav-links">
         <a href="#home">Home</a>
         <a href="#case-studies">Case Studies</a>
@@ -22,7 +22,7 @@
         <a href="#projects">Projects</a>
         <a href="#contact">Contact</a>
       </div>
-      <div id="nav-time" style="font-size: 14px; font-weight: 500; color: #4f4f4f;"></div>
+      <div id="nav-time"></div>
     </nav>
     <div id="mobile-menu-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(245, 245, 245, 0.98); backdrop-filter: blur(20px); z-index: 2000; flex-direction: column; padding: 40px 24px; gap: 16px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
@@ -167,7 +167,12 @@
     const timeEl = document.getElementById('nav-time');
     if (timeEl) {
       const now = new Date();
-      timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      timeEl.textContent = `${hours}:${minutes} ${ampm}`;
     }
   }
   setInterval(updateTime, 1000);
