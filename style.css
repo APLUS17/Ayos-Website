@@ -956,7 +956,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 }
 
 /* ══════════════════════════════════════════════════════
-   CUSTOM CURSOR (Arrow Pointer Translation)
+   CUSTOM CURSOR (Glitch Effect Translation)
 ══════════════════════════════════════════════════════ */
 @media (hover: hover) and (pointer: fine) {
   body, a, button, select, input, textarea, [onclick], .ec-chip, .footer-cta-btn {
@@ -973,20 +973,26 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   position: fixed;
   top: 0;
   left: 0;
-  width: 24px;
-  height: 24px;
+  width: 15px;
+  height: 15px;
   z-index: 2147483647;
   pointer-events: none;
   user-select: none;
   opacity: 0;
   box-sizing: border-box;
+  background-color: #222;
+  border-radius: 50%;
+  backdrop-filter: invert(1);
+  -webkit-backdrop-filter: invert(1);
   transform: translate3d(0, 0, 0);
-  transform-origin: center top; /* Rotate from the pointer tip */
-  transition: opacity 0.25s ease, transform 0.08s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: center center;
+  transition: opacity 0.25s ease, width 0.15s ease, height 0.15s ease, background-color 0.15s ease;
 }
 
 #custom-cursor.hovering {
-  transform: translate3d(0, 0, 0) scale(1.35); /* Scale up on hover */
+  width: 30px;
+  height: 30px;
+  background-color: #111;
 }
 
 

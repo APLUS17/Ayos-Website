@@ -452,7 +452,7 @@ function handleSubmit(e) {
 }
 
 /* ═══════════════════════════════════════════════════
-   CUSTOM CURSOR (Arrow Pointer Translation)
+   CUSTOM CURSOR (Glitch Effect Translation)
 ═══════════════════════════════════════════════════ */
 document.addEventListener("DOMContentLoaded", () => {
   // Only initialize if it is a desktop device (has hover capability)
@@ -460,12 +460,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const cursorEl = document.createElement("div");
   cursorEl.id = "custom-cursor";
-  cursorEl.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width: 100%; height: 100%;">
-      <path d="M25,30a5.82,5.82,0,0,1-1.09-.17l-.2-.07-7.36-3.48a.72.72,0,0,0-.35-.08.78.78,0,0,0-.33.07L8.24,29.54a.66.66,0,0,1-.2.06,5.17,5.17,0,0,1-1,.15,3.6,3.6,0,0,1-3.29-5L12.68,4.2a3.59,3.59,0,0,1,6.58,0l9,20.74A3.6,3.6,0,0,1,25,30Z" fill="#F2F5F8"/>
-      <path d="M16,3A2.59,2.59,0,0,1,18.34,4.6l9,20.74A2.59,2.59,0,0,1,25,29a5.42,5.42,0,0,1-.86-.15l-7.37-3.48a1.84,1.84,0,0,0-.77-.17,1.69,1.69,0,0,0-.73.16l-7.4,3.31a5.89,5.89,0,0,1-.79.12,2.59,2.59,0,0,1-2.37-3.62L13.6,4.6A2.58,2.58,0,0,1,16,3m0-2h0A4.58,4.58,0,0,0,11.76,3.8L2.84,24.33A4.58,4.58,0,0,0,7,30.75a6.08,6.08,0,0,0,1.21-.17,1.87,1.87,0,0,0,.4-.13L16,27.18l7.29,3.44a1.64,1.64,0,0,0,.39.14A6.37,6.37,0,0,0,25,31a4.59,4.59,0,0,0,4.21-6.41l-9-20.75A4.62,4.62,0,0,0,16,1Z" fill="#292927"/>
-    </svg>
-  `;
   document.body.appendChild(cursorEl);
 
   let mouseX = 0;
@@ -482,50 +476,21 @@ document.addEventListener("DOMContentLoaded", () => {
     pointerY: 0,
     previousPointerX: 0,
     previousPointerY: 0,
-    angle: 0,
-    previousAngle: 0,
-    angleDisplace: 0,
-    degrees: 57.296,
-  };
-
-  const calculateRotation = () => {
-    if (state.distance <= 1) return state.angleDisplace;
-
-    const unsortedAngle = Math.atan(Math.abs(state.distanceY) / Math.abs(state.distanceX)) * state.degrees;
-    state.previousAngle = state.angle;
-
-    if (state.distanceX <= 0 && state.distanceY >= 0) {
-      state.angle = 90 - unsortedAngle;
-    } else if (state.distanceX < 0 && state.distanceY < 0) {
-      state.angle = unsortedAngle + 90;
-    } else if (state.distanceX >= 0 && state.distanceY <= 0) {
-      state.angle = 90 - unsortedAngle + 180;
-    } else if (state.distanceX > 0 && state.distanceY > 0) {
-      state.angle = unsortedAngle + 270;
-    }
-
-    if (isNaN(state.angle)) {
-      state.angle = state.previousAngle;
-    } else {
-      if (state.angle - state.previousAngle <= -270) {
-        state.angleDisplace += 360 + state.angle - state.previousAngle;
-      } else if (state.angle - state.previousAngle >= 270) {
-        state.angleDisplace += state.angle - state.previousAngle - 360;
-      } else {
-        state.angleDisplace += state.angle - state.previousAngle;
-      }
-    }
-    return state.angleDisplace;
   };
 
   const updateCursorPosition = () => {
-    const size = 24;
-    const rotation = calculateRotation();
-    const hoverScale = isHovering ? 1.35 : 1;
-    const finalScale = hoverScale * clickScale;
+    const size = isHovering ? 30 : 15;
+    const finalScale = clickScale;
     
-    // Position offset centers horizontally and aligns top with mouse client Y coordinate (arrow tip)
-    cursorEl.style.transform = `translate3d(${mouseX - size / 2}px, ${mouseY}px, 0) rotate(${rotation}deg) scale(${finalScale})`;
+    // Position offset centers the cursor circle
+    cursorEl.style.transform = `translate3d(${mouseX - size / 2}px, ${mouseY - size / 2}px, 0) scale(${finalScale})`;
+    
+    // Calculate shadow shift for glitch colors, capped between -10px and 10px
+    const distanceX = Math.min(Math.max(state.distanceX, -10), 10);
+    const distanceY = Math.min(Math.max(state.distanceY, -10), 10);
+    
+    // Shadow 1: cyan (#00feff), Shadow 2: red/pink (#ff4f71)
+    cursorEl.style.boxShadow = `${distanceX}px ${distanceY}px 0 #00feff, ${-distanceX}px ${-distanceY}px 0 #ff4f71`;
   };
 
   document.addEventListener("mousemove", (event) => {
@@ -536,7 +501,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     state.distanceX = state.previousPointerX - state.pointerX;
     state.distanceY = state.previousPointerY - state.pointerY;
-    state.distance = Math.sqrt(state.distanceY ** 2 + state.distanceX ** 2);
 
     mouseX = event.clientX;
     mouseY = event.clientY;
