@@ -955,3 +955,50 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   line-height: 1.6;
 }
 
+/* ══════════════════════════════════════════════════════
+   CUSTOM CURSOR (Circle & Dot Translation)
+══════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+  body, a, button, select, input, textarea, [onclick], .ec-chip, .footer-cta-btn {
+    cursor: none !important;
+  }
+  
+  #custom-cursor {
+    display: block !important;
+  }
+}
+
+#custom-cursor {
+  display: none; /* Hidden on touch/mobile devices */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  z-index: 2147483647;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  box-sizing: border-box;
+  background-color: transparent;
+  border: 1.25px solid #292927;
+  border-radius: 50%;
+  transform: translate3d(0, 0, 0);
+  transform-origin: center center;
+  /* Trailing dot represented by box-shadow */
+  box-shadow: 0 -15px 0 -8px #292927;
+  transition: opacity 0.25s ease, border 0.15s ease, background-color 0.15s ease, width 0.15s ease, height 0.15s ease, box-shadow 0.05s ease;
+}
+
+#custom-cursor.hovering {
+  width: 30px;
+  height: 30px;
+  background-color: rgba(41, 41, 39, 0.15); /* Soft inner fill on hover */
+  border: 1.25px solid #292927;
+}
+
+#custom-cursor.fading {
+  box-shadow: 0 -15px 0 -8px rgba(41, 41, 39, 0); /* Fade out trailing dot when stationary */
+}
+
+

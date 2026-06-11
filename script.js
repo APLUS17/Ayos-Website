@@ -450,3 +450,146 @@ function handleSubmit(e) {
     }, 3000);
   }, 1200);
 }
+
+/* ═══════════════════════════════════════════════════
+   CUSTOM CURSOR (Circle & Dot Translation)
+═══════════════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", () => {
+  // Only initialize if it is a desktop device (has hover capability)
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+  const cursorEl = document.createElement("div");
+  cursorEl.id = "custom-cursor";
+  document.body.appendChild(cursorEl);
+
+  let mouseX = 0;
+  let mouseY = 0;
+  let isVisible = false;
+  let isHovering = false;
+  let fadeTimeout = null;
+  let isFading = false;
+
+  const state = {
+    distanceX: 0,
+    distanceY: 0,
+    distance: 0,
+    pointerX: 0,
+    pointerY: 0,
+    previousPointerX: 0,
+    previousPointerY: 0,
+    angle: 0,
+    previousAngle: 0,
+    angleDisplace: 0,
+    degrees: 57.296,
+  };
+
+  const calculateRotation = () => {
+    if (state.distance <= 1) return state.angleDisplace;
+
+    const unsortedAngle = Math.atan(Math.abs(state.distanceY) / Math.abs(state.distanceX)) * state.degrees;
+    state.previousAngle = state.angle;
+
+    if (state.distanceX <= 0 && state.distanceY >= 0) {
+      state.angle = 90 - unsortedAngle;
+    } else if (state.distanceX < 0 && state.distanceY < 0) {
+      state.angle = unsortedAngle + 90;
+    } else if (state.distanceX >= 0 && state.distanceY <= 0) {
+      state.angle = 90 - unsortedAngle + 180;
+    } else if (state.distanceX > 0 && state.distanceY > 0) {
+      state.angle = unsortedAngle + 270;
+    }
+
+    if (isNaN(state.angle)) {
+      state.angle = state.previousAngle;
+    } else {
+      if (state.angle - state.previousAngle <= -270) {
+        state.angleDisplace += 360 + state.angle - state.previousAngle;
+      } else if (state.angle - state.previousAngle >= 270) {
+        state.angleDisplace += state.angle - state.previousAngle - 360;
+      } else {
+        state.angleDisplace += state.angle - state.previousAngle;
+      }
+    }
+    return state.angleDisplace;
+  };
+
+  const updateCursorPosition = () => {
+    const size = isHovering ? 30 : 20;
+    const rotation = calculateRotation();
+    
+    // Position offset by half the size to center the cursor
+    cursorEl.style.transform = `translate3d(${mouseX - size / 2}px, ${mouseY - size / 2}px, 0) rotate(${rotation}deg)`;
+    
+    // Stretch box-shadow dot dynamically based on movement velocity
+    const dotDistance = Math.min(15 + state.distance * 1.5, 45); // cap it at 45px stretch
+    cursorEl.style.boxShadow = `0 -${dotDistance}px 0 -8px #292927`;
+  };
+
+  document.addEventListener("mousemove", (event) => {
+    state.previousPointerX = state.pointerX;
+    state.previousPointerY = state.pointerY;
+    state.pointerX = event.clientX; // use Client coordinates to prevent page scroll offsets from throwing it off
+    state.pointerY = event.clientY;
+    
+    state.distanceX = state.previousPointerX - state.pointerX;
+    state.distanceY = state.previousPointerY - state.pointerY;
+    state.distance = Math.sqrt(state.distanceY ** 2 + state.distanceX ** 2);
+
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+
+    if (!isVisible) {
+      isVisible = true;
+      cursorEl.style.opacity = "1";
+    }
+
+    // Handle fading dot (when mouse stops, dot fades under the circle)
+    cursorEl.classList.remove("fading");
+    isFading = false;
+    clearTimeout(fadeTimeout);
+    
+    fadeTimeout = setTimeout(() => {
+      cursorEl.classList.add("fading");
+      isFading = true;
+    }, 80);
+
+    // Hover state verification
+    const target = event.target;
+    if (target) {
+      const isInteractive = 
+        target.tagName === "A" || 
+        target.tagName === "BUTTON" || 
+        target.onclick !== null || 
+        target.closest("a") !== null || 
+        target.closest("button") !== null || 
+        target.classList.contains("ec-chip") || 
+        target.classList.contains("footer-cta-btn") ||
+        window.getComputedStyle(target).cursor === "pointer";
+      
+      if (isInteractive !== isHovering) {
+        isHovering = isInteractive;
+        if (isHovering) {
+          cursorEl.classList.add("hovering");
+        } else {
+          cursorEl.classList.remove("hovering");
+        }
+      }
+    }
+
+    requestAnimationFrame(updateCursorPosition);
+  });
+
+  document.addEventListener("mouseleave", () => {
+    isVisible = false;
+    cursorEl.style.opacity = "0";
+  });
+
+  document.addEventListener("mousedown", () => {
+    cursorEl.style.transform += " scale(0.75)";
+  });
+
+  document.addEventListener("mouseup", () => {
+    // scale is restored during position update cycle on next frame
+  });
+});
+
