@@ -134,102 +134,298 @@ if (tickerBarText) {
 }
 
 /* ═══════════════════════════════════════════════════
-   ASSISTANT WIDGET
+   INBOUND LEAD CATCHER CHATBOT
+   Adapted for Ayo Omoloja
 ═══════════════════════════════════════════════════ */
-const assistantBtn   = document.getElementById('assistantBtn');
-const assistantPanel = document.getElementById('assistantPanel');
-const apClose        = document.getElementById('apClose');
-const bubbleRow      = document.getElementById('bubbleRow');
-const msgOptions     = document.getElementById('msgOptions');
-const assistantInput = document.getElementById('assistantInput');
-const apSend         = document.getElementById('apSend');
-const messages       = document.getElementById('assistantMessages');
 
-const replies = {
-  'ai-automation': [
-    "Great choice! I specialize in building AI workflows that run 24/7.",
-    "I typically use n8n, OpenAI, and custom APIs. Want to tell me more about your use case?"
-  ],
-  'ai-agent': [
-    "AI agents are my favourite thing to build.",
-    "They can handle lead gen, customer support, data extraction — you name it. What's your business?"
-  ],
-  'fullstack': [
-    "I build full-stack apps with React, Next.js, Node.js, and Supabase.",
-    "Do you have a project in mind, or need a full build from scratch?"
-  ],
-  'consulting': [
-    "I offer strategy sessions to map out your automation roadmap.",
-    "Usually 60 minutes — we audit your workflows and identify the biggest wins. Interested?"
-  ],
-  'other': [
-    "No worries! Tell me what's on your mind.",
-    "You can also just email me directly at ayo@example.com"
-  ]
+// Hook messages rotating logic
+let activeHookIdx = 4; // Start at "Open to new projects. Let's talk."
+const hookMsgs = document.querySelectorAll('.hook-msg');
+const ecHook = document.getElementById('ec-hook');
+const ecPanel = document.getElementById('ec-panel');
+const ecBackdrop = document.getElementById('ec-backdrop');
+const ecCloseBtn = document.querySelector('.ec-close-btn');
+const ecMsgs = document.getElementById('ec-msgs');
+const ecIn = document.getElementById('ec-in');
+const ecSend = document.getElementById('ec-send');
+
+function rotateHook() {
+  if (!ecHook || ecHook.classList.contains('panel-open')) return;
+  hookMsgs.forEach(m => m.classList.remove('active'));
+  activeHookIdx = (activeHookIdx + 1) % hookMsgs.length;
+  if (hookMsgs[activeHookIdx]) {
+    hookMsgs[activeHookIdx].classList.add('active');
+  }
+}
+setInterval(rotateHook, 4000);
+
+// Chatbot State and Setup
+let chatbotState = {
+  step: 'service', // service, problem, timeline, name, email, done
+  data: {
+    service: '',
+    problem: '',
+    timeline: '',
+    name: '',
+    email: '',
+    score: ''
+  }
 };
 
-// Open / close panel
-assistantBtn.addEventListener('click', () => {
-  assistantPanel.classList.toggle('open');
-  bubbleRow.style.display = assistantPanel.classList.contains('open') ? 'none' : 'flex';
-});
+// Webhook config
+const WEBHOOK_URL = 'https://primary-production-c22f.up.railway.app/webhook/lead-catcher';
 
-apClose.addEventListener('click', () => {
-  assistantPanel.classList.remove('open');
-  bubbleRow.style.display = 'flex';
-});
+// Toggle Chat
+function toggleChat() {
+  if (!ecPanel) return;
+  const isOpen = ecPanel.classList.toggle('open');
+  ecHook.classList.toggle('panel-open', isOpen);
+  ecBackdrop.classList.toggle('show', isOpen);
+  
+  if (isOpen && ecMsgs.children.length === 0) {
+    startChatbot();
+  }
+}
 
-// Option buttons
-msgOptions.querySelectorAll('.msg-option').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const key = btn.dataset.reply;
+function closeChat() {
+  if (!ecPanel) return;
+  ecPanel.classList.remove('open');
+  ecHook.classList.remove('panel-open');
+  ecBackdrop.classList.remove('show');
+}
 
-    // Add user message
-    addMessage(btn.textContent, 'user');
-
-    // Hide options
-    msgOptions.style.display = 'none';
-
-    // Enable input
-    assistantInput.disabled = false;
-    assistantInput.placeholder = 'Type your message…';
-
-    // Typing indicator then reply
-    const typing = addMessage('…', 'bot');
-    setTimeout(() => {
-      typing.remove();
-      const replyMsgs = replies[key] || ["Thanks for reaching out!", "Let me connect you with Ayo."];
-      replyMsgs.forEach((text, i) => {
-        setTimeout(() => addMessage(text, 'bot'), i * 600);
-      });
-    }, 800);
+if (ecHook) {
+  ecHook.addEventListener('click', (e) => {
+    if (e.target.classList.contains('ec-close-btn')) return;
+    toggleChat();
   });
-});
+}
 
-// Send custom message
-function sendMessage() {
-  const val = assistantInput.value.trim();
+if (ecCloseBtn) {
+  ecCloseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeChat();
+  });
+}
+
+if (ecBackdrop) {
+  ecBackdrop.addEventListener('click', closeChat);
+}
+
+// Typing indicator helper
+function showTypingIndicator() {
+  const wrap = document.createElement('div');
+  wrap.className = 'ec-typ-wrap';
+  wrap.innerHTML = '<div class="ec-typ"><span></span><span></span><span></span></div>';
+  ecMsgs.appendChild(wrap);
+  ecMsgs.scrollTop = ecMsgs.scrollHeight;
+  return wrap;
+}
+
+// Add bot message
+function addBotMessage(text, delay = 800) {
+  return new Promise((resolve) => {
+    const indicator = showTypingIndicator();
+    setTimeout(() => {
+      indicator.remove();
+      const m = document.createElement('div');
+      m.className = 'ec-m bot';
+      m.innerHTML = `<div class="ec-bub">${text}</div>`;
+      ecMsgs.appendChild(m);
+      ecMsgs.scrollTop = ecMsgs.scrollHeight;
+      resolve();
+    }, delay);
+  });
+}
+
+// Add user message
+function addUserMessage(text) {
+  const m = document.createElement('div');
+  m.className = 'ec-m usr';
+  m.innerHTML = `<div class="ec-bub">${text}</div>`;
+  ecMsgs.appendChild(m);
+  ecMsgs.scrollTop = ecMsgs.scrollHeight;
+}
+
+// Show chips
+function showChips(options, onClickCallback) {
+  const wrap = document.createElement('div');
+  wrap.className = 'ec-chips-wrap';
+  const chips = document.createElement('div');
+  chips.className = 'ec-chips';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'ec-chip';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => {
+      Array.from(chips.children).forEach(c => {
+        c.disabled = true;
+        if (c === btn) c.classList.add('sel');
+      });
+      onClickCallback(opt);
+    });
+    chips.appendChild(btn);
+  });
+  wrap.appendChild(chips);
+  ecMsgs.appendChild(wrap);
+  ecMsgs.scrollTop = ecMsgs.scrollHeight;
+}
+
+async function startChatbot() {
+  chatbotState.step = 'service';
+  ecMsgs.innerHTML = '';
+  ecIn.disabled = true;
+  ecIn.placeholder = 'Choose an option above…';
+  
+  await addBotMessage("Hey. I am Ayo's assistant.");
+  await addBotMessage("What are you looking to get help with?");
+  
+  showChips(
+    ["AI Automation", "24/7 AI Agent", "UI/UX Design", "Website", "Consulting", "Something else"],
+    handleServiceSelected
+  );
+}
+
+async function handleServiceSelected(service) {
+  chatbotState.data.service = service;
+  addUserMessage(service);
+  
+  chatbotState.step = 'problem';
+  
+  await addBotMessage("Awesome. Can you describe the problem you're looking to solve or the service you need?");
+  
+  ecIn.disabled = false;
+  ecIn.placeholder = 'Type your problem description…';
+  ecIn.focus();
+}
+
+async function handleProblemSubmitted(problem) {
+  chatbotState.data.problem = problem;
+  addUserMessage(problem);
+  
+  ecIn.value = '';
+  ecIn.disabled = true;
+  ecIn.placeholder = 'Choose a timeline above…';
+  
+  chatbotState.step = 'timeline';
+  
+  await addBotMessage("Got it. What is your timeline for this project?");
+  
+  showChips(
+    ["ASAP", "1–3 months", "Exploring"],
+    handleTimelineSelected
+  );
+}
+
+async function handleTimelineSelected(timeline) {
+  chatbotState.data.timeline = timeline;
+  addUserMessage(timeline);
+  
+  if (timeline === "ASAP") chatbotState.data.score = "Hot";
+  else if (timeline === "1–3 months") chatbotState.data.score = "Warm";
+  else chatbotState.data.score = "Cold";
+  
+  chatbotState.step = 'name';
+  
+  await addBotMessage("Perfect. Lastly, what's your name and email so Ayo can follow up?");
+  await addBotMessage("Please enter your name:");
+  
+  ecIn.disabled = false;
+  ecIn.placeholder = 'Enter your name…';
+  ecIn.focus();
+}
+
+async function handleNameSubmitted(name) {
+  chatbotState.data.name = name;
+  addUserMessage(name);
+  
+  chatbotState.step = 'email';
+  
+  ecIn.value = '';
+  await addBotMessage(`Thanks ${name}! Now, please enter your email address:`);
+  
+  ecIn.placeholder = 'Enter your email…';
+  ecIn.focus();
+}
+
+async function handleEmailSubmitted(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    addUserMessage(email);
+    ecIn.value = '';
+    await addBotMessage("That doesn't look like a valid email address. Please try again:");
+    return;
+  }
+  
+  chatbotState.data.email = email;
+  addUserMessage(email);
+  
+  chatbotState.step = 'done';
+  ecIn.value = '';
+  ecIn.disabled = true;
+  ecIn.placeholder = 'Chat completed';
+  
+  const indicator = showTypingIndicator();
+  
+  await submitLead(chatbotState.data);
+  
+  indicator.remove();
+  
+  const ok = document.createElement('div');
+  ok.className = 'ec-ok';
+  ok.innerHTML = `
+    <div class="ec-ok-star">✦</div>
+    <h3>Thanks for reaching out!</h3>
+    <p>Ayo will get back to you in under 5 seconds (check your inbox!).</p>
+  `;
+  ecMsgs.appendChild(ok);
+  ecMsgs.scrollTop = ecMsgs.scrollHeight;
+}
+
+async function submitLead(data) {
+  const payload = {
+    ...data,
+    timestamp: new Date().toISOString()
+  };
+  
+  console.log("Submitting Lead data:", payload);
+  
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    console.log("Webhook response status:", response.status);
+  } catch (error) {
+    console.error("Webhook submission failed:", error);
+  }
+}
+
+function handleTextSubmit() {
+  const val = ecIn.value.trim();
   if (!val) return;
-  addMessage(val, 'user');
-  assistantInput.value = '';
-  const typing = addMessage('…', 'bot');
-  setTimeout(() => {
-    typing.remove();
-    addMessage("Thanks! Ayo will get back to you shortly. You can also email directly at ayo@example.com", 'bot');
-  }, 1000);
+  
+  if (chatbotState.step === 'problem') {
+    handleProblemSubmitted(val);
+  } else if (chatbotState.step === 'name') {
+    handleNameSubmitted(val);
+  } else if (chatbotState.step === 'email') {
+    handleEmailSubmitted(val);
+  }
 }
 
-apSend.addEventListener('click', sendMessage);
-assistantInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
-
-function addMessage(text, type) {
-  const div = document.createElement('div');
-  div.className = `msg msg-${type === 'user' ? 'user' : 'bot'}`;
-  div.textContent = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-  return div;
+if (ecSend) {
+  ecSend.addEventListener('click', handleTextSubmit);
 }
+if (ecIn) {
+  ecIn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleTextSubmit();
+  });
+}
+
 
 /* ═══════════════════════════════════════════════════
    CONTACT FORM

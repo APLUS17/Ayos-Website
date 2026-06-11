@@ -6,8 +6,8 @@
   <title>Ayo Omoloja | AI Automation Consultant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=1.0.1" />
 </head>
 <body>
 
@@ -144,9 +144,51 @@
     </div>
   </footer>
 
-<div id="assistant-bubble" style="position: fixed; bottom: 40px; right: 40px; width: 50px; height: 50px; background: #1f1f1f; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 600; cursor: pointer; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-  AO
+<!-- Backdrop for chatbot focus -->
+<div id="ec-backdrop"></div>
+
+<!-- Chatbot Container -->
+<div id="ec-root">
+  <!-- always-visible hook bar -->
+  <div id="ec-hook">
+    <div id="ec-hook-text">
+      <span class="hook-msg" id="hm-0">Want to save 10+ hours a week with AI?</span>
+      <span class="hook-msg" id="hm-1">I build automations that work while you sleep.</span>
+      <span class="hook-msg" id="hm-2">Got a repetitive workflow? Let's automate it.</span>
+      <span class="hook-msg" id="hm-3">AI consulting for businesses ready to scale.</span>
+      <span class="hook-msg active" id="hm-4">Open to new projects. Let's talk.</span>
+    </div>
+    <span id="ec-hook-arrow">→</span>
+  </div>
+
+  <!-- chat panel -->
+  <div id="ec-panel">
+    <div class="ec-header">
+      <div class="ec-header-left">
+        <div class="ec-av">AO</div>
+        <div class="ec-ht">
+          <p>Ayo's Assistant</p>
+          <span>Online now</span>
+        </div>
+      </div>
+      <button class="ec-close-btn" aria-label="Close">×</button>
+    </div>
+    <div id="ec-msgs">
+      <!-- Chat bubbles and interactive elements will be injected here -->
+    </div>
+    <div class="ec-input-row">
+      <input id="ec-in" type="text" placeholder="Choose an option above…" autocomplete="off" disabled>
+      <button id="ec-send" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#000" stroke="none"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="ec-foot">✦ ayoomoloja.com</div>
+  </div>
 </div>
+
 
 <script>
   function updateTime() {
@@ -182,5 +224,6 @@
   menuClose.addEventListener('click', closeMenu);
   mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 </script>
+<script src="script.js?v=1.0.1"></script>
 </body>
 </html>

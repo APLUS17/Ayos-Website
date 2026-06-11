@@ -435,3 +435,411 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 @media (max-width: 899px) {
   .mobile-only { display: block !important; }
 }
+
+/* ══════════════════════════════════════════════════════
+   INBOUND LEAD CATCHER CHATBOT (Emanuelcira Style)
+   Adapted for Ayo Omoloja
+   Isolated Namespace: #ec-*, .ec-*
+   Uses DM Sans and DM Mono
+══════════════════════════════════════════════════════ */
+
+#ec-root {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 550px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 10000;
+  font-family: 'DM Sans', sans-serif;
+  box-sizing: border-box;
+  transition: transform 0.3s ease, left 0.3s ease, width 0.3s ease;
+}
+
+#ec-root * {
+  box-sizing: border-box;
+}
+
+@media (max-width: 580px) {
+  #ec-root {
+    width: calc(100% - 32px);
+    bottom: 16px;
+    left: 16px;
+    transform: none;
+  }
+}
+
+/* ── HOOK BAR (always visible) ── */
+#ec-hook {
+  border: 1px solid #000;
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.65); /* Translucent background matching emanuelcira.com */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background 0.15s, border-radius 0.2s;
+  min-height: 52px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+#ec-hook:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+#ec-hook.panel-open {
+  border-radius: 12px 12px 0 0;
+  border-bottom: none;
+  box-shadow: none;
+}
+#ec-hook-text {
+  font-size: 13.5px;
+  color: #000;
+  line-height: 1.45;
+  flex: 1;
+  position: relative;
+  min-height: 20px;
+  overflow: hidden;
+}
+.hook-msg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+.hook-msg.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: none;
+  position: relative;
+}
+#ec-hook-arrow {
+  font-size: 18px;
+  color: #000;
+  opacity: 0.35;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.2s;
+}
+#ec-hook:hover #ec-hook-arrow {
+  opacity: 0.7;
+  transform: translateX(2px);
+}
+#ec-hook.panel-open #ec-hook-arrow {
+  transform: rotate(90deg);
+  opacity: 0.5;
+}
+
+/* ── BACKDROP ── */
+#ec-backdrop {
+  display: none !important;
+}
+
+/* ── PANEL ── */
+#ec-panel {
+  border: 1px solid #000;
+  border-radius: 0 0 12px 12px;
+  background: rgba(255, 255, 255, 0.65); /* Translucent background matching emanuelcira.com */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+#ec-panel.open {
+  max-height: 600px;
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* header inside panel */
+.ec-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.ec-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ec-av {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #000;
+  flex-shrink: 0;
+}
+.ec-ht p {
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+}
+.ec-ht span {
+  font-size: 11px;
+  color: rgba(0,0,0,0.4);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ec-ht span::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #000;
+  opacity: .6;
+  display: inline-block;
+}
+.ec-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  color: #000;
+  opacity: 0.3;
+  font-weight: 300;
+  line-height: 1;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+.ec-close-btn:hover {
+  opacity: 0.8;
+}
+
+/* messages */
+#ec-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 260px;
+  max-height: 360px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.1) transparent;
+}
+
+.ec-m {
+  display: flex;
+  flex-direction: column;
+  max-width: 82%;
+  animation: fu 0.22s ease;
+}
+@keyframes fu {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ec-m.bot {
+  align-self: flex-start;
+}
+.ec-m.usr {
+  align-self: flex-end;
+}
+
+.ec-bub {
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  border: 1px solid #000;
+  background: transparent;
+  color: #000;
+  border-radius: 12px;
+}
+.ec-m.bot .ec-bub {
+  border-radius: 2px 12px 12px 12px;
+}
+.ec-m.usr .ec-bub {
+  background: #000;
+  color: #fff;
+  border-radius: 12px 2px 12px 12px;
+  font-weight: 500;
+}
+
+/* typing */
+.ec-typ-wrap {
+  align-self: flex-start;
+  animation: fu 0.2s ease;
+}
+.ec-typ {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 11px 14px;
+  border: 1px solid #000;
+  border-radius: 2px 12px 12px 12px;
+  width: fit-content;
+  background: transparent;
+}
+.ec-typ span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  animation: dot 1.2s infinite;
+}
+.ec-typ span:nth-child(2) {
+  animation-delay: .2s;
+}
+.ec-typ span:nth-child(3) {
+  animation-delay: .4s;
+}
+@keyframes dot {
+  0%, 80%, 100% {
+    transform: scale(0.55);
+    opacity: .2;
+  }
+  40% {
+    transform: scale(1);
+    opacity: .75;
+  }
+}
+
+/* chips */
+.ec-chips-wrap {
+  align-self: flex-start;
+  max-width: 96%;
+  animation: fu 0.22s ease;
+  margin-bottom: 4px;
+}
+.ec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ec-chip {
+  padding: 7px 14px;
+  border: 1px solid #000;
+  border-radius: 12px;
+  background: transparent;
+  color: #000;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.ec-chip:hover {
+  background: #000;
+  color: #fff;
+}
+.ec-chip.sel {
+  background: #000;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* input row */
+.ec-input-row {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid #000;
+  flex-shrink: 0;
+}
+#ec-in {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #000;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  padding: 13px 16px;
+}
+#ec-in::placeholder {
+  color: rgba(0,0,0,0.28);
+}
+#ec-in:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+#ec-send {
+  width: 46px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid #000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+#ec-send:hover {
+  background: rgba(0,0,0,0.05);
+}
+#ec-send svg {
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+/* footer */
+.ec-foot {
+  padding: 8px 16px 9px;
+  text-align: center;
+  font-size: 10.5px;
+  color: rgba(0,0,0,0.22);
+  letter-spacing: .06em;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+/* success */
+.ec-ok {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 28px;
+  gap: 8px;
+  animation: fu .3s ease;
+}
+.ec-ok-star {
+  font-size: 22px;
+  color: #000;
+  margin-bottom: 2px;
+}
+.ec-ok h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+}
+.ec-ok p {
+  font-size: 13px;
+  color: rgba(0,0,0,0.42);
+  line-height: 1.6;
+}
+
