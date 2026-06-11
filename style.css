@@ -118,10 +118,10 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   align-items: center;
   justify-content: space-between;
   border-radius: 12px; /* Matches reference border radius (12px) */
-  background-color: rgba(255, 255, 255, 0.05); /* Subtly visible glass background */
-  border: 1px solid rgba(117, 117, 117, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.65); /* Translucent background matching chatbot */
+  border: 1px solid #000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: 
     rgba(0, 0, 0, 0.18) 0px 0.636953px 0.636953px -0.9375px, 
     rgba(0, 0, 0, 0.17) 0px 1.9316px 1.9316px -1.875px, 
