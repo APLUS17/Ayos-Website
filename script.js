@@ -173,7 +173,7 @@ let chatbotState = {
 };
 
 // Webhook config
-const WEBHOOK_URL = 'https://primary-production-c22f.up.railway.app/webhook/lead-catcher';
+const WEBHOOK_URL = 'http://35.238.129.106.nip.io:5678/webhook/inbound-lead';
 
 // Toggle Chat
 function toggleChat() {

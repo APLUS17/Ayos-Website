@@ -1,0 +1,30 @@
+{
+  "name": "ayo-omolaja-portfolio",
+  "version": "1.0.0",
+  "description": "AI Automation & Full-Stack Engineer. I build custom workflows, AI agents, and automation systems that save time and increase revenue.",
+  "main": "script.js",
+  "scripts": {
+    "deploy": "npx trigger.dev@4.4.6 deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/APLUS17/Ayos-Website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/APLUS17/Ayos-Website/issues"
+  },
+  "homepage": "https://github.com/APLUS17/Ayos-Website#readme",
+  "dependencies": {
+    "@trigger.dev/sdk": "^4.4.6",
+    "docx": "^9.7.1",
+    "googleapis": "^173.0.0",
+    "groq-sdk": "^1.2.1"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "^4.4.6",
+    "typescript": "^5.9.3"
+  }
+}

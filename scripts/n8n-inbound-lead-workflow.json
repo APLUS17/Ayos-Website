@@ -1,0 +1,86 @@
+{
+  "name": "Inbound Lead → Trigger.dev Report",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "inbound-lead",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "a2c4e6f8-0001-0001-0001-000000000001",
+      "name": "Chatbot Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "inbound-lead"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst { service, problem, timeline, name, email, score, timestamp } = item.json;\n\nif (!name || !service || !problem || !timeline || !email) {\n  throw new Error('Missing required fields. Received keys: ' + Object.keys(item.json).join(', '));\n}\n\nreturn [{ json: item.json }];"
+      },
+      "id": "a2c4e6f8-0001-0001-0001-000000000002",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.trigger.dev/api/v1/tasks/inbound-lead-report/trigger",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer YOUR_TRIGGER_PROD_SECRET_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ payload: $json }) }}",
+        "options": {}
+      },
+      "id": "a2c4e6f8-0001-0001-0001-000000000003",
+      "name": "Trigger Report Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Chatbot Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "Trigger Report Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
