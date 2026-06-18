@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/inbound-lead",
+      "destination": "http://35.238.129.106:5678/webhook/inbound-lead"
+    }
+  ]
+}
